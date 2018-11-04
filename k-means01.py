@@ -2,22 +2,31 @@ import matplotlib.pyplot as plot
 from matplotlib import style
 style.use('ggplot')
 from sklearn.cluster import KMeans
+from sklearn import preprocessing, cross_validation
+import pandas as pd
+import numpy as np
 
-data = [[1,2],
-        [2,6],
-        [3,2],
-        [10,7],
-        [8,7],
-        [9,5]]
+df = pd.read_excel('titanic.xls')
+print(df.head())
+df.drop(['name','body'], 1, inplace=True)
+df.convert_objects(convert_numeric=True)
+df.fillna(0, inplace=True)
 
-clf = KMeans(n_clusters=2)
-clf.fit(data)
+def convert_to_numeric(df):
+    cols = df.columns.values
+    for col in cols:
+        text_digit_dic = {}
+        def get_int_of_text(text):
+            return text_digit_dic[text]
+        if df[col].dtype!=np.int64 and df[col].dtype!=np.float64:
+            unique_contents = set(df[col].values.tolist())
+            x = 0
+            for unique in unique_contents:
+                if unique not in text_digit_dic:
+                    text_digit_dic[unique] = 0
+                    x+=1
+            df[col] = list(map(get_int_of_text, df[col]))
+    return df;
 
-centroids = clf.cluster_centers_
-labels = clf.labels_
-colors = 10*['g.', 'b.', 'r.']
-
-for i in range(len(data)):
-    plot.plot(data[i][0], data[i][1], colors[labels[i]], markersize = 25)
-plot.scatter(centroids[:,0], centroids[:,1], marker='x', s=150, linewidths=5)
-plot.show()
+df = convert_to_numeric(df)
+print(df.head())
